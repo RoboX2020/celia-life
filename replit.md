@@ -78,17 +78,18 @@ Preferred communication style: Simple, everyday language.
 
 **Schema Design**:
 
-*Patients Table*:
-- Primary key: Auto-incrementing integer ID
-- Fields: name, email, createdAt, updatedAt
-- Demo patient seeded: "Jane Doe"
+*Users Table*:
+- Primary key: UUID (varchar)
+- Fields: email, firstName, lastName, profileImageUrl
+- Authentication via Replit Auth
+- Timestamps: createdAt, updatedAt
 
 *Documents Table*:
 - Primary key: Auto-incrementing integer ID
-- Foreign key: patientId references patients
+- Foreign key: userId references users (varchar)
 - Metadata: originalFileName, storedFilePath, mimeType, sizeBytes
-- Classification: documentType (enum), title, source, dateOfService
-- Content: shortSummary
+- Classification: documentType (enum), clinicalType, title, source, dateOfService
+- Content: shortSummary, extractedText (OCR)
 - Timestamps: createdAt, updatedAt
 
 **Document Types Enum**:
@@ -137,6 +138,11 @@ Preferred communication style: Simple, everyday language.
   - @neondatabase/serverless: Connection driver with WebSocket support
 - **Drizzle ORM**: Type-safe database queries and migrations
   - drizzle-zod: Generate Zod schemas from database schema
+
+### AI/ML Services
+- **Gemini AI**: OCR text extraction and document analysis
+  - @google/genai: Gemini SDK for TypeScript
+  - Replit AI Integrations: Built-in Gemini access without API key
 
 ### File Handling
 - **Multer**: Multipart form data parsing for file uploads

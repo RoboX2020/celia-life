@@ -65,6 +65,7 @@ export const documents = pgTable("documents", {
   source: text("source"),
   dateOfService: timestamp("date_of_service"),
   shortSummary: text("short_summary").notNull(),
+  extractedText: text("extracted_text"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

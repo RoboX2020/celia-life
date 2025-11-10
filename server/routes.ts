@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs/promises";
 import { processUploadedFile } from "./documentProcessor";
+import { extractTextFromDocument } from "./ocrService";
 
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
@@ -88,6 +89,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sizeBytes: size,
       });
 
+      // Extract text from document using OCR (async, don't block response)
+      let extractedText: string | null = null;
+      try {
+        extractedText = await extractTextFromDocument(storedFilePath, mimetype);
+      } catch (error) {
+        console.error("OCR extraction failed, continuing without extracted text:", error);
+      }
+
       // Create document record
       const document = await storage.createDocument({
         userId,
@@ -101,6 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         source: req.body.source || "Unknown",
         dateOfService: processedInfo.dateOfService,
         shortSummary: processedInfo.shortSummary,
+        extractedText: extractedText,
       });
 
       // Remove storedFilePath from response for security
