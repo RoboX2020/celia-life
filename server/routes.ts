@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import multer from "multer";
 import { randomUUID } from "crypto";
 import path from "path";
@@ -54,31 +55,29 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Ensure demo patient exists
-  const DEMO_PATIENT_ID = 1;
-  
-  app.post("/api/init-demo-patient", async (req, res) => {
+  // Setup authentication
+  await setupAuth(app);
+
+  // GET /api/auth/user - Get current user (required for useAuth hook)
+  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
-      const existingPatient = await storage.getPatient(DEMO_PATIENT_ID);
-      if (!existingPatient) {
-        await storage.createPatient({
-          name: "Jane Doe",
-          email: "jane.doe@example.com",
-        });
-      }
-      res.json({ success: true });
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  // POST /api/documents - Upload a document
-  app.post("/api/documents", upload.single("file"), async (req, res) => {
+  // POST /api/documents - Upload a document (protected)
+  app.post("/api/documents", isAuthenticated, upload.single("file"), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file provided" });
       }
 
+      const userId = req.user.claims.sub;
       const { originalname, mimetype, size, filename } = req.file;
       const storedFilePath = path.join(UPLOADS_DIR, filename);
 
@@ -91,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create document record
       const document = await storage.createDocument({
-        patientId: DEMO_PATIENT_ID,
+        userId,
         originalFileName: originalname,
         storedFilePath,
         mimeType: mimetype,
@@ -118,12 +117,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/documents - List documents with optional type filter
-  app.get("/api/documents", async (req, res) => {
+  // GET /api/documents - List documents with optional type filter (protected)
+  app.get("/api/documents", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const documentType = req.query.documentType as string | undefined;
       const clinicalType = req.query.clinicalType as string | undefined;
-      const documents = await storage.getDocuments(DEMO_PATIENT_ID, documentType, clinicalType);
+      const documents = await storage.getDocuments(userId, documentType, clinicalType);
       
       // Remove storedFilePath from all documents for security
       const safeDocuments = documents.map(({ storedFilePath, ...doc }) => doc);
@@ -133,15 +133,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/documents/:id - Get document details
-  app.get("/api/documents/:id", async (req, res) => {
+  // GET /api/documents/:id - Get document details (protected)
+  app.get("/api/documents/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid document ID" });
       }
 
-      const document = await storage.getDocumentById(id);
+      const document = await storage.getDocumentById(id, userId);
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
@@ -154,15 +155,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/documents/:id/download - Download document file
-  app.get("/api/documents/:id/download", async (req, res) => {
+  // GET /api/documents/:id/download - Download document file (protected)
+  app.get("/api/documents/:id/download", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid document ID" });
       }
 
-      const document = await storage.getDocumentById(id);
+      const document = await storage.getDocumentById(id, userId);
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
@@ -188,15 +190,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DELETE /api/documents/:id - Delete a document
-  app.delete("/api/documents/:id", async (req, res) => {
+  // DELETE /api/documents/:id - Delete a document (protected)
+  app.delete("/api/documents/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid document ID" });
       }
 
-      const document = await storage.getDocumentById(id);
+      const document = await storage.getDocumentById(id, userId);
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
@@ -210,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Delete from database
-      await storage.deleteDocument(id);
+      await storage.deleteDocument(id, userId);
 
       res.json({ success: true });
     } catch (error: any) {
