@@ -67,6 +67,7 @@ function App() {
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -83,7 +84,6 @@ function AppContent() {
     return <Landing />;
   }
 
-  const [location] = useLocation();
   const isChatPage = location === "/chat";
   
   return (
