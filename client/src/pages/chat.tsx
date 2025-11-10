@@ -48,13 +48,6 @@ export default function Chat() {
     },
   });
 
-  const generateReportMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/chat/report", undefined);
-      return await response.json() as { report: string };
-    },
-  });
-
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || sendMessageMutation.isPending) return;
@@ -64,17 +57,29 @@ export default function Chat() {
   const handleGenerateReport = async () => {
     setIsGeneratingReport(true);
     try {
-      const result = await generateReportMutation.mutateAsync();
+      const response = await fetch("/api/chat/report", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Accept": "application/pdf",
+        },
+      });
       
-      const blob = new Blob([result.report], { type: "text/plain" });
+      if (!response.ok) {
+        throw new Error(`Failed to generate report: ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `medical-report-${new Date().toISOString().split("T")[0]}.txt`;
+      a.download = `medical-report-${new Date().toISOString().split("T")[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to generate report:", error);
     } finally {
       setIsGeneratingReport(false);
     }

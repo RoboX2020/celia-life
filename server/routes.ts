@@ -339,7 +339,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Get all user's documents
       const documents = await storage.getDocuments(userId);
 
       if (documents.length === 0) {
@@ -348,10 +347,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate comprehensive report
-      const report = await generateMedicalReport(documents);
+      const reportText = await generateMedicalReport(documents);
+      
+      const PDFDocument = (await import('pdfkit')).default;
+      const doc = new PDFDocument({
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        size: 'LETTER'
+      });
 
-      res.json({ report });
+      const fileName = `medical-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+      doc.pipe(res);
+
+      doc.fontSize(20).font('Helvetica-Bold').text('MedVault Medical History Report', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(10).font('Helvetica').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+      doc.moveDown(2);
+
+      doc.fontSize(12).font('Helvetica');
+      const lines = reportText.split('\n');
+      for (const line of lines) {
+        if (line.trim().startsWith('#')) {
+          doc.moveDown();
+          doc.fontSize(14).font('Helvetica-Bold').text(line.replace(/^#+\s*/, ''));
+          doc.fontSize(12).font('Helvetica');
+        } else if (line.trim()) {
+          doc.text(line.trim());
+        } else {
+          doc.moveDown(0.5);
+        }
+      }
+
+      doc.moveDown(2);
+      doc.fontSize(8).fillColor('#666666').text(
+        'This report is generated from uploaded medical documents and should be reviewed by healthcare professionals.',
+        { align: 'center' }
+      );
+
+      doc.end();
     } catch (error: any) {
       console.error("Error generating medical report:", error);
       res.status(500).json({ message: error.message });
