@@ -16,7 +16,7 @@ export default function Landing() {
             <h1 className="text-2xl font-semibold">MedVault</h1>
           </div>
           <Button onClick={handleLogin} data-testid="button-login">
-            Log In with Replit
+            Sign In
           </Button>
         </div>
       </header>

@@ -15,9 +15,16 @@ export interface ChatContext {
   conversationHistory?: Array<{ role: string; content: string }>;
 }
 
+export interface Citation {
+  documentId: number;
+  documentTitle?: string;
+  relevance?: string;
+}
+
 export interface ChatResponse {
   response: string;
   documentsReferenced?: number[];
+  citations?: Citation[];
 }
 
 export async function generateChatResponse(
@@ -52,13 +59,11 @@ Your role:
 - Help users find specific records (surgeries, tests, medications, etc.)
 - Translate medical information to English when needed
 - Generate comprehensive medical history reports when requested
-- Always cite which documents you're referencing by their ID numbers
 
 Important guidelines:
 - Be compassionate and professional
 - Use clear, non-technical language when possible
 - If you're unsure, say so - medical information requires accuracy
-- Always reference specific documents when answering questions
 - Organize information chronologically when relevant
 - For date-specific queries, carefully check document dates
 
@@ -66,12 +71,22 @@ The user has uploaded ${documents.length} medical documents. Here they are:
 
 ${documentContext}
 
-When answering:
-1. Reference documents by their ID numbers (e.g., "According to Document 3...")
-2. Use the extracted text for detailed information
-3. Consider dates when answering temporal queries
-4. If translating, note the original language detected
-5. For comprehensive reports, organize by categories (surgeries, lab results, medications, etc.)`;
+You MUST respond in this exact JSON format:
+{
+  "answer": "Your detailed answer to the user's question",
+  "citations": [
+    {
+      "documentId": 123,
+      "relevance": "Brief note about why this document is relevant"
+    }
+  ]
+}
+
+CRITICAL: 
+- Only include document IDs that you actually used to answer the question
+- The documentId must match the ID from the documents above
+- If no documents were used, return an empty citations array
+- Keep relevance notes brief (one sentence)`;
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -92,19 +107,41 @@ When answering:
       contents: chatContent,
     });
 
-    const response = result.text || "";
+    const responseText = result.text || "{}";
+    
+    let parsedResponse: { answer: string; citations?: Citation[] };
+    try {
+      parsedResponse = JSON.parse(responseText);
+    } catch (error) {
+      console.error("Failed to parse AI response as JSON:", responseText);
+      return {
+        response: responseText,
+        documentsReferenced: undefined,
+        citations: undefined,
+      };
+    }
 
+    const validCitations: Citation[] = [];
     const referencedDocs: number[] = [];
-    documents.forEach((doc) => {
-      if (response.toLowerCase().includes(doc.id.toString()) ||
-          response.toLowerCase().includes(doc.title.toLowerCase())) {
-        referencedDocs.push(doc.id);
-      }
-    });
+    
+    if (parsedResponse.citations && Array.isArray(parsedResponse.citations)) {
+      parsedResponse.citations.forEach((citation) => {
+        const doc = documents.find(d => d.id === citation.documentId);
+        if (doc) {
+          validCitations.push({
+            documentId: doc.id,
+            documentTitle: doc.title,
+            relevance: citation.relevance,
+          });
+          referencedDocs.push(doc.id);
+        }
+      });
+    }
 
     return {
-      response,
+      response: parsedResponse.answer || responseText,
       documentsReferenced: referencedDocs.length > 0 ? referencedDocs : undefined,
+      citations: validCitations.length > 0 ? validCitations : undefined,
     };
   } catch (error) {
     console.error("Error generating chat response:", error);

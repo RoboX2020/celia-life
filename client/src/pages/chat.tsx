@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Bot, Send, FileText, Download, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Bot, Send, FileText, Download, Loader2, ExternalLink } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Link } from "wouter";
 import type { ChatMessage, ChatConversation } from "@shared/schema";
 
 interface ChatResponse {
@@ -218,15 +220,35 @@ export default function Chat() {
                         <Bot className="h-4 w-4 text-primary" />
                       </div>
                     )}
-                    <div
-                      className={`rounded-lg px-4 py-3 max-w-[80%] ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
-                      data-testid={`message-${message.role}-${message.id}`}
-                    >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    <div className="max-w-[80%] space-y-2">
+                      <div
+                        className={`rounded-lg px-4 py-3 ${
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                        data-testid={`message-${message.role}-${message.id}`}
+                      >
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                      {message.role === "assistant" && message.documentsReferenced && message.documentsReferenced.length > 0 && (
+                        <div className="flex flex-wrap gap-2 items-center px-2">
+                          <span className="text-xs text-muted-foreground">Sources:</span>
+                          {message.documentsReferenced.map((docId) => (
+                            <Link key={docId} href={`/documents/${docId}`}>
+                              <Badge 
+                                variant="outline" 
+                                className="hover-elevate cursor-pointer gap-1"
+                                data-testid={`citation-${docId}`}
+                              >
+                                <FileText className="h-3 w-3" />
+                                Doc #{docId}
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </Badge>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))

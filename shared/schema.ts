@@ -98,6 +98,7 @@ export const chatMessages = pgTable("chat_messages", {
   conversationId: integer("conversation_id").notNull().references(() => chatConversations.id),
   role: text("role").notNull(),
   content: text("content").notNull(),
+  documentsReferenced: integer("documents_referenced").array(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
