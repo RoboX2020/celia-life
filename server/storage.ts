@@ -7,7 +7,7 @@ import {
   type InsertDocument 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   // Patient operations
@@ -48,25 +48,37 @@ export class DatabaseStorage implements IStorage {
       const docs = await db
         .select()
         .from(documents)
-        .where(eq(documents.patientId, patientId))
-        .where(eq(documents.documentType, documentType))
-        .where(eq(documents.clinicalType, clinicalType))
+        .where(
+          and(
+            eq(documents.patientId, patientId),
+            eq(documents.documentType, documentType),
+            eq(documents.clinicalType, clinicalType)
+          )
+        )
         .orderBy(desc(documents.createdAt));
       return docs;
     } else if (documentType) {
       const docs = await db
         .select()
         .from(documents)
-        .where(eq(documents.patientId, patientId))
-        .where(eq(documents.documentType, documentType))
+        .where(
+          and(
+            eq(documents.patientId, patientId),
+            eq(documents.documentType, documentType)
+          )
+        )
         .orderBy(desc(documents.createdAt));
       return docs;
     } else if (clinicalType) {
       const docs = await db
         .select()
         .from(documents)
-        .where(eq(documents.patientId, patientId))
-        .where(eq(documents.clinicalType, clinicalType))
+        .where(
+          and(
+            eq(documents.patientId, patientId),
+            eq(documents.clinicalType, clinicalType)
+          )
+        )
         .orderBy(desc(documents.createdAt));
       return docs;
     } else {
