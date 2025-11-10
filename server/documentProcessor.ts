@@ -8,6 +8,7 @@ interface ProcessFileMetadata {
 
 interface ProcessedFileInfo {
   documentType: string;
+  clinicalType: string;
   title: string;
   shortSummary: string;
   dateOfService: Date | null;
@@ -88,6 +89,111 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
       title = `Document (uploaded ${today})`;
   }
   
+  // Rule-based clinical type classification
+  let clinicalType = "other_unclassified";
+  
+  // Cardiology keywords
+  if (
+    lowerFileName.includes("heart") ||
+    lowerFileName.includes("cardiac") ||
+    lowerFileName.includes("cardio") ||
+    lowerFileName.includes("ecg") ||
+    lowerFileName.includes("ekg") ||
+    lowerFileName.includes("echo") ||
+    lowerFileName.includes("blood pressure") ||
+    lowerFileName.includes("hypertension")
+  ) {
+    clinicalType = "cardiology";
+  }
+  
+  // Dermatology keywords
+  else if (
+    lowerFileName.includes("skin") ||
+    lowerFileName.includes("derma") ||
+    lowerFileName.includes("rash") ||
+    lowerFileName.includes("acne") ||
+    lowerFileName.includes("mole") ||
+    lowerFileName.includes("eczema") ||
+    lowerFileName.includes("psoriasis")
+  ) {
+    clinicalType = "dermatology";
+  }
+  
+  // Neurology keywords
+  else if (
+    lowerFileName.includes("neuro") ||
+    lowerFileName.includes("brain") ||
+    lowerFileName.includes("migraine") ||
+    lowerFileName.includes("headache") ||
+    lowerFileName.includes("seizure") ||
+    lowerFileName.includes("stroke") ||
+    lowerFileName.includes("nerve")
+  ) {
+    clinicalType = "neurology";
+  }
+  
+  // Endocrinology keywords
+  else if (
+    lowerFileName.includes("diabetes") ||
+    lowerFileName.includes("thyroid") ||
+    lowerFileName.includes("hormone") ||
+    lowerFileName.includes("endocrine") ||
+    lowerFileName.includes("insulin") ||
+    lowerFileName.includes("glucose")
+  ) {
+    clinicalType = "endocrinology";
+  }
+  
+  // Dentistry/Stomatology keywords
+  else if (
+    lowerFileName.includes("dental") ||
+    lowerFileName.includes("tooth") ||
+    lowerFileName.includes("teeth") ||
+    lowerFileName.includes("dentist") ||
+    lowerFileName.includes("oral") ||
+    lowerFileName.includes("cavity") ||
+    lowerFileName.includes("gum")
+  ) {
+    clinicalType = "dentistry";
+  }
+  
+  // Gynecology keywords
+  else if (
+    lowerFileName.includes("gyneco") ||
+    lowerFileName.includes("obstetric") ||
+    lowerFileName.includes("pregnancy") ||
+    lowerFileName.includes("prenatal") ||
+    lowerFileName.includes("pap smear") ||
+    lowerFileName.includes("mammogram") ||
+    lowerFileName.includes("ovarian") ||
+    lowerFileName.includes("uterine")
+  ) {
+    clinicalType = "gynecology";
+  }
+  
+  // Psychiatry/Mental Health keywords
+  else if (
+    lowerFileName.includes("mental") ||
+    lowerFileName.includes("psych") ||
+    lowerFileName.includes("anxiety") ||
+    lowerFileName.includes("depression") ||
+    lowerFileName.includes("therapy") ||
+    lowerFileName.includes("counseling")
+  ) {
+    clinicalType = "psychiatry";
+  }
+  
+  // General/Primary Care - default for common terms
+  else if (
+    lowerFileName.includes("physical") ||
+    lowerFileName.includes("checkup") ||
+    lowerFileName.includes("annual") ||
+    lowerFileName.includes("wellness") ||
+    lowerFileName.includes("primary care")
+  ) {
+    clinicalType = "general_primary_care";
+  }
+  
   // Generate placeholder summary
   const shortSummary = "This is a placeholder summary for demo purposes. In the full version, AI will generate a real summary of the document content.";
   
@@ -96,6 +202,7 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
   
   return {
     documentType,
+    clinicalType,
     title,
     shortSummary,
     dateOfService,

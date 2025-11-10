@@ -97,6 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mimeType: mimetype,
         sizeBytes: size,
         documentType: processedInfo.documentType,
+        clinicalType: processedInfo.clinicalType,
         title: processedInfo.title,
         source: req.body.source || "Unknown",
         dateOfService: processedInfo.dateOfService,
@@ -121,7 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/documents", async (req, res) => {
     try {
       const documentType = req.query.documentType as string | undefined;
-      const documents = await storage.getDocuments(DEMO_PATIENT_ID, documentType);
+      const clinicalType = req.query.clinicalType as string | undefined;
+      const documents = await storage.getDocuments(DEMO_PATIENT_ID, documentType, clinicalType);
       
       // Remove storedFilePath from all documents for security
       const safeDocuments = documents.map(({ storedFilePath, ...doc }) => doc);

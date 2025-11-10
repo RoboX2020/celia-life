@@ -16,7 +16,7 @@ export interface IStorage {
   
   // Document operations
   createDocument(document: InsertDocument): Promise<Document>;
-  getDocuments(patientId: number, documentType?: string): Promise<Document[]>;
+  getDocuments(patientId: number, documentType?: string, clinicalType?: string): Promise<Document[]>;
   getDocumentById(id: number): Promise<Document | undefined>;
   deleteDocument(id: number): Promise<void>;
 }
@@ -43,13 +43,30 @@ export class DatabaseStorage implements IStorage {
     return document;
   }
 
-  async getDocuments(patientId: number, documentType?: string): Promise<Document[]> {
-    if (documentType) {
+  async getDocuments(patientId: number, documentType?: string, clinicalType?: string): Promise<Document[]> {
+    if (documentType && clinicalType) {
       const docs = await db
         .select()
         .from(documents)
         .where(eq(documents.patientId, patientId))
         .where(eq(documents.documentType, documentType))
+        .where(eq(documents.clinicalType, clinicalType))
+        .orderBy(desc(documents.createdAt));
+      return docs;
+    } else if (documentType) {
+      const docs = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.patientId, patientId))
+        .where(eq(documents.documentType, documentType))
+        .orderBy(desc(documents.createdAt));
+      return docs;
+    } else if (clinicalType) {
+      const docs = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.patientId, patientId))
+        .where(eq(documents.clinicalType, clinicalType))
         .orderBy(desc(documents.createdAt));
       return docs;
     } else {

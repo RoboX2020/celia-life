@@ -23,6 +23,21 @@ export const documentTypeEnum = z.enum([
 
 export type DocumentType = z.infer<typeof documentTypeEnum>;
 
+// Clinical type enum
+export const clinicalTypeEnum = z.enum([
+  "general_primary_care",
+  "cardiology",
+  "endocrinology",
+  "neurology",
+  "dermatology",
+  "dentistry",
+  "gynecology",
+  "psychiatry",
+  "other_unclassified"
+]);
+
+export type ClinicalType = z.infer<typeof clinicalTypeEnum>;
+
 // Document table
 export const documents = pgTable("documents", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -32,6 +47,7 @@ export const documents = pgTable("documents", {
   mimeType: text("mime_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
   documentType: text("document_type").notNull(),
+  clinicalType: text("clinical_type").notNull().default("other_unclassified"),
   title: text("title").notNull(),
   source: text("source"),
   dateOfService: timestamp("date_of_service"),
