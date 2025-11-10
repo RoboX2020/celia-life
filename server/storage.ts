@@ -1,38 +1,70 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { 
+  patients, 
+  documents,
+  type Patient, 
+  type InsertPatient,
+  type Document,
+  type InsertDocument 
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Patient operations
+  getPatient(id: number): Promise<Patient | undefined>;
+  createPatient(patient: InsertPatient): Promise<Patient>;
+  
+  // Document operations
+  createDocument(document: InsertDocument): Promise<Document>;
+  getDocuments(patientId: number, documentType?: string): Promise<Document[]>;
+  getDocumentById(id: number): Promise<Document | undefined>;
+  deleteDocument(id: number): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getPatient(id: number): Promise<Patient | undefined> {
+    const [patient] = await db.select().from(patients).where(eq(patients.id, id));
+    return patient || undefined;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async createPatient(insertPatient: InsertPatient): Promise<Patient> {
+    const [patient] = await db
+      .insert(patients)
+      .values(insertPatient)
+      .returning();
+    return patient;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const [document] = await db
+      .insert(documents)
+      .values(insertDocument)
+      .returning();
+    return document;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getDocuments(patientId: number, documentType?: string): Promise<Document[]> {
+    let query = db
+      .select()
+      .from(documents)
+      .where(eq(documents.patientId, patientId));
+
+    if (documentType) {
+      query = query.where(eq(documents.documentType, documentType)) as any;
+    }
+
+    const docs = await query.orderBy(desc(documents.createdAt));
+    return docs;
+  }
+
+  async getDocumentById(id: number): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
+  }
+
+  async deleteDocument(id: number): Promise<void> {
+    await db.delete(documents).where(eq(documents.id, id));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
