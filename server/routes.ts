@@ -103,7 +103,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shortSummary: processedInfo.shortSummary,
       });
 
-      res.json(document);
+      // Remove storedFilePath from response for security
+      const { storedFilePath: _, ...safeDocument } = document;
+      res.json(safeDocument);
     } catch (error: any) {
       // Clean up uploaded file if database operation fails
       if (req.file) {
@@ -120,7 +122,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const documentType = req.query.documentType as string | undefined;
       const documents = await storage.getDocuments(DEMO_PATIENT_ID, documentType);
-      res.json(documents);
+      
+      // Remove storedFilePath from all documents for security
+      const safeDocuments = documents.map(({ storedFilePath, ...doc }) => doc);
+      res.json(safeDocuments);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -139,7 +144,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      res.json(document);
+      // Remove storedFilePath from response for security
+      const { storedFilePath: _, ...safeDocument } = document;
+      res.json(safeDocument);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

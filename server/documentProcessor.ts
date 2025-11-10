@@ -19,9 +19,9 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
   
   let documentType = "other";
   
-  // Rule-based document type classification
+  // Rule-based document type classification with priority order
+  // Check medical images first (for image files with specific keywords)
   if (mimeType.startsWith("image/")) {
-    // Check for medical imaging keywords
     if (
       lowerFileName.includes("scan") ||
       lowerFileName.includes("mri") ||
@@ -35,8 +35,8 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
     }
   }
   
-  // Lab report detection
-  if (
+  // Lab report detection (only if not already classified)
+  else if (
     lowerFileName.includes("lab") ||
     lowerFileName.includes("result") ||
     lowerFileName.includes("test") ||
@@ -46,8 +46,8 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
     documentType = "lab_report";
   }
   
-  // Prescription detection
-  if (
+  // Prescription detection (only if not already classified)
+  else if (
     lowerFileName.includes("rx") ||
     lowerFileName.includes("prescription") ||
     lowerFileName.includes("medication") ||
@@ -56,8 +56,8 @@ export function processUploadedFile(metadata: ProcessFileMetadata): ProcessedFil
     documentType = "prescription";
   }
   
-  // Doctor note detection
-  if (
+  // Doctor note detection (only if not already classified)
+  else if (
     lowerFileName.includes("note") ||
     lowerFileName.includes("visit") ||
     lowerFileName.includes("consult") ||

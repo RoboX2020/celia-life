@@ -44,17 +44,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDocuments(patientId: number, documentType?: string): Promise<Document[]> {
-    let query = db
-      .select()
-      .from(documents)
-      .where(eq(documents.patientId, patientId));
-
     if (documentType) {
-      query = query.where(eq(documents.documentType, documentType)) as any;
+      const docs = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.patientId, patientId))
+        .where(eq(documents.documentType, documentType))
+        .orderBy(desc(documents.createdAt));
+      return docs;
+    } else {
+      const docs = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.patientId, patientId))
+        .orderBy(desc(documents.createdAt));
+      return docs;
     }
-
-    const docs = await query.orderBy(desc(documents.createdAt));
-    return docs;
   }
 
   async getDocumentById(id: number): Promise<Document | undefined> {
