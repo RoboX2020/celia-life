@@ -8,6 +8,7 @@ import path from "path";
 import fs from "fs/promises";
 import { processUploadedFile } from "./documentProcessor";
 import { extractTextFromDocument } from "./ocrService";
+import { generateChatResponse, generateMedicalReport } from "./aiChatService";
 
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
@@ -227,6 +228,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ success: true });
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/chat/conversations - Create a new conversation (protected)
+  app.post("/api/chat/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversation = await storage.createChatConversation({ userId });
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/chat/conversations - Get all conversations for user (protected)
+  app.get("/api/chat/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getChatConversations(userId);
+      res.json(conversations);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/chat/conversations/:id/messages - Get messages for a conversation (protected)
+  app.get("/api/chat/conversations/:id/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversationId = parseInt(req.params.id);
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      const messages = await storage.getChatMessages(conversationId, userId);
+      res.json(messages);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/chat/message - Send a message and get AI response (protected)
+  app.post("/api/chat/message", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { message, conversationId } = req.body;
+
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Create new conversation if not provided
+      let convoId = conversationId;
+      if (!convoId) {
+        const conversation = await storage.createChatConversation({ userId });
+        convoId = conversation.id;
+      }
+
+      // Save user message
+      await storage.createChatMessage({
+        conversationId: convoId,
+        role: "user",
+        content: message,
+      });
+
+      // Get all user's documents for context
+      const documents = await storage.getDocuments(userId);
+
+      // Get conversation history for context
+      const history = await storage.getChatMessages(convoId, userId);
+
+      // Generate AI response
+      const aiResponse = await generateChatResponse({
+        documents,
+        userQuery: message,
+        conversationHistory: history.slice(-10).map(msg => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+      });
+
+      // Save AI response
+      const assistantMessage = await storage.createChatMessage({
+        conversationId: convoId,
+        role: "assistant",
+        content: aiResponse.response,
+      });
+
+      // Update conversation title if it's the first message
+      if (history.length === 0) {
+        const title = message.slice(0, 50) + (message.length > 50 ? "..." : "");
+        await storage.updateChatConversation(convoId, { title });
+      }
+
+      res.json({
+        conversationId: convoId,
+        message: assistantMessage,
+        documentsReferenced: aiResponse.documentsReferenced,
+      });
+    } catch (error: any) {
+      console.error("Error in chat message:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/chat/report - Generate comprehensive medical report (protected)
+  app.post("/api/chat/report", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all user's documents
+      const documents = await storage.getDocuments(userId);
+
+      if (documents.length === 0) {
+        return res.status(400).json({ 
+          message: "No documents found. Please upload medical documents first." 
+        });
+      }
+
+      // Generate comprehensive report
+      const report = await generateMedicalReport(documents);
+
+      res.json({ report });
+    } catch (error: any) {
+      console.error("Error generating medical report:", error);
       res.status(500).json({ message: error.message });
     }
   });
