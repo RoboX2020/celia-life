@@ -235,3 +235,17 @@ All uploaded documents undergo automatic text extraction:
 - Enhanced landing page to highlight AI capabilities
 - Fixed React hooks ordering bug for proper route handling
 - Integrated Replit OIDC authentication for secure access
+
+### Document Citation System (November 10, 2025)
+- Added documentsReferenced field to chat_messages table (integer array)
+- Implemented clickable citation badges in chat UI below assistant messages
+- Citations display as "Sources: Doc #1, Doc #2" with links to document detail pages
+- Each citation includes FileText and ExternalLink icons for clear UX
+- Citations validate document IDs from AI responses to prevent hallucinations
+
+### UI/UX Enhancements (November 10, 2025)
+- Created professional Footer component with MedVault branding
+- Added footer to all pages: landing, dashboard, document detail, and chat
+- Footer includes features list, security information, and medical disclaimer
+- Removed all "Replit" branding from user-facing elements
+- Updated login button from "Log In with Replit" to "Sign In"
