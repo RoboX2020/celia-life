@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { 
   FileText, FlaskConical, Image, Stethoscope, Pill, FolderOpen,
   Heart, Brain, Droplet, Activity, Smile, Users, Apple
@@ -37,26 +38,42 @@ const clinicalTypeFilters = [
   { title: "Other / Unclassified", type: "other_unclassified", icon: FileText },
 ];
 
-interface AppSidebarProps {
-  viewMode: ViewMode;
-}
-
-export function AppSidebar({ viewMode }: AppSidebarProps) {
-  const [location, setLocation] = useLocation();
+export function AppSidebar() {
+  const [, setLocation] = useLocation();
+  const [currentUrl, setCurrentUrl] = useState(typeof window !== 'undefined' ? window.location.href : '/');
+  
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentUrl(window.location.href);
+    };
+    
+    window.addEventListener('popstate', handleLocationChange);
+    
+    const observer = new MutationObserver(handleLocationChange);
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    const interval = setInterval(handleLocationChange, 100);
+    
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, []);
   
   const getSearchParams = () => {
-    const params = new URLSearchParams(location.split('?')[1] || '');
+    const params = new URLSearchParams(window.location.search);
     return {
-      mode: params.get('mode'),
+      mode: (params.get('mode') as ViewMode) || VIEW_MODES.BY_CATEGORY,
       type: params.get('type'),
       clinical: params.get('clinical'),
     };
   };
   
-  const { type: currentType, clinical: currentClinical } = getSearchParams();
+  const { mode: viewMode, type: currentType, clinical: currentClinical} = getSearchParams();
   
   const handleFilterClick = (filterType: string | null, paramName: 'type' | 'clinical') => {
-    const params = new URLSearchParams(location.split('?')[1] || '');
+    const params = new URLSearchParams(window.location.search);
     params.set('mode', viewMode);
     
     if (filterType === null) {
@@ -70,7 +87,7 @@ export function AppSidebar({ viewMode }: AppSidebarProps) {
 
   if (viewMode === VIEW_MODES.BY_DATE) {
     return (
-      <Sidebar>
+      <Sidebar key="by_date">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Timeline View</SidebarGroupLabel>
@@ -87,7 +104,7 @@ export function AppSidebar({ viewMode }: AppSidebarProps) {
 
   if (viewMode === VIEW_MODES.BY_CLINICAL_TYPE) {
     return (
-      <Sidebar>
+      <Sidebar key="by_clinical_type">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Clinical Areas</SidebarGroupLabel>
@@ -114,7 +131,7 @@ export function AppSidebar({ viewMode }: AppSidebarProps) {
   }
 
   return (
-    <Sidebar>
+    <Sidebar key="by_category">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Document Types</SidebarGroupLabel>

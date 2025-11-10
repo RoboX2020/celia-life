@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Download, Trash2 } from "lucide-react";
 import { documentTypeConfig, type DocumentType } from "@/lib/documentTypes";
+import { clinicalTypeConfig, type ClinicalType } from "@/lib/clinicalTypes";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -178,6 +179,13 @@ export default function DocumentDetail() {
             <dt className="text-sm text-muted-foreground mb-1">Document Type</dt>
             <dd className="font-medium" data-testid="text-doc-type">
               {typeConfig?.label || document.documentType}
+            </dd>
+          </div>
+          
+          <div>
+            <dt className="text-sm text-muted-foreground mb-1">Clinical Area</dt>
+            <dd className="font-medium" data-testid="text-clinical-type">
+              {clinicalTypeConfig[document.clinicalType as ClinicalType]?.label || document.clinicalType}
             </dd>
           </div>
           
