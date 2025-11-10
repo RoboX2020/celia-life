@@ -1,0 +1,42 @@
+UI behavior:
+  •  When “By clinical type” is selected:
+  •  Replace the left sidebar with a list of clinical types instead of document categories. Example types:
+  •  General / Primary care
+  •  Cardiology
+  •  Endocrinology
+  •  Neurology
+  •  Dermatology
+  •  Stomatology / Dentistry
+  •  Gynecology / Obstetrics
+  •  Psychiatry / Mental health
+  •  Other / Unclassified
+  •  These clinical types come from metadata on each document (later assigned by AI; for now they can be stubbed or rule-based from file names).
+  •  Main content area:
+  •  When a clinical type is selected in the sidebar, show a sectioned view:
+  •  At the top: a small summary box for that clinical area (later: generated summary of problems, meds, and key events related to that specialty).
+  •  Below: all documents related to that clinical area, regardless of file category (lab, note, scan, etc.).
+  •  Documents are listed similarly to the category view, but filtered by clinical type.
+  •  Optional enhancement (not required for v1 but design for it):
+  •  Within each clinical type, allow simple sub-filters: “Labs only”, “Imaging only”, “Notes only”, etc.
+
+From the doctor’s perspective, they can quickly switch to, say, Dermatology and see only the skin-related story across time and document types. From the patient’s perspective, they can see “everything about my heart” vs “everything about my hormones”, etc.
+
+⸻
+
+Shared document detail view
+  •  Regardless of which view mode is active (By date, By category, By clinical type), clicking a document should open the same detail panel/page:
+  •  Title, type, clinical type, date, source, summary, and “Open / download original” button.
+  •  The breadcrumb or header can show the current view mode so the user understands where they came from.
+
+⸻
+
+Summary of expected behavior
+  •  Add a 3-option view-mode selector (“By date”, “By category”, “By clinical type”) above the document list area.
+  •  Switching modes re-renders the main content area according to the rules above, but does not change the upload panel or the underlying data.
+  •  Every document has at least:
+  •  a date,
+  •  a document category,
+  •  and (later via AI) a clinical type,
+so it can automatically be placed correctly in all three views.
+
+⸻

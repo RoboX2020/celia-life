@@ -1,0 +1,70 @@
+Prompt: View Modes for Patient & Doctor UI
+
+Add a global view mode switcher to the MedVault interface so that the same underlying medical documents can be visualized in three different ways:
+  1.  By date (Timeline / Visits)
+  2.  By document category (current behavior: lab reports, medical images, doctor notes, prescriptions, etc.)
+  3.  By clinical type (dermatology, cardiology, dentistry, neurology, etc.)
+
+Global behavior
+  •  The existing layout stays:
+  •  Left sidebar with “Document types” (or equivalent)
+  •  Main content area with upload panel and document list.
+  •  Above the document list (near the top of the main content area), add a “View as:” switcher – for example a 3-tab control or segmented buttons:
+  •  By date
+  •  By category
+  •  By clinical type
+  •  Switching between these modes does not change the underlying data; it only changes how the documents and visits are grouped and displayed.
+  •  Any newly uploaded document should automatically appear in all three views, just grouped differently.
+
+⸻
+
+1. View as: By date (Timeline / Visits)
+
+Goal: Show the patient’s history as a sequence of visits/episodes in time, so that doctors can see what happened around the same period and how different doctors and tests relate to one issue.
+
+UI behavior:
+  •  When “By date” is selected in the view switcher:
+  •  The main content area changes from a flat list of individual documents to a timeline of visits/episodes.
+  •  Each visit/episode card represents a cluster of documents that happened within a similar time window (e.g. same day or same week) and are logically connected.
+  •  Card header: date (or date range), e.g. “3–7 May 2025”.
+  •  Sub-header: short label like “Migraine workup”, “Abdominal pain – ER visit”, “Dermatology follow-up” (generated later by AI; for now this can be a placeholder).
+  •  Inside the card: mini list of documents associated with that visit:
+  •  document type badge (Lab report, Doctor note, Medical image, Prescription, etc.)
+  •  short title
+  •  The cards are ordered chronologically from newest to oldest (or allow a toggle).
+  •  Clicking a document inside a visit card opens the same document detail view as in other modes.
+  •  Optional controls:
+  •  A small date range filter (e.g. last 6 months / last 12 months / all time).
+  •  A simple free-text search that filters visits where any document matches.
+
+From the doctor’s perspective, this lets them quickly answer:
+
+“What was happening around March 2024?” and “What did the patient try at the same time for this issue?”
+
+⸻
+
+2. View as: By category (current behavior, but explicit)
+
+Goal: Show documents grouped by file/document category (lab reports, medical images, doctor notes, prescriptions, other).
+
+UI behavior:
+  •  When “By category” is selected:
+  •  The UI should behave very similarly to the current MedVault demo.
+  •  The left sidebar remains a list of document categories:
+  •  All documents
+  •  Lab reports
+  •  Medical images
+  •  Doctor notes
+  •  Prescriptions
+  •  Other
+  •  The main document list shows individual documents filtered by the selected category:
+  •  card/row with title, document type badge, file name, size, upload date.
+  •  Upload panel at the top behaves the same: when files are uploaded, they appear in this list in the correct category.
+
+This is the “raw documents” view for both patient and doctor.
+
+⸻
+
+3. View as: By clinical type (specialty / body system / problem type)
+
+Goal: Group all data by clinical area / specialty / problem type, so both patient and doctor can see everything related to “Dermatology”, “Cardiology”, “Stomatology (dentistry)”, etc.
