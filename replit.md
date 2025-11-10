@@ -2,7 +2,11 @@
 
 ## Overview
 
-MedVault Demo is a full-stack web application for managing medical documents. It allows patients to securely upload, organize, and view various types of medical files including lab reports, medical images, prescriptions, and doctor notes. The application features automatic document type classification, file organization, and a clean, healthcare-appropriate interface built with Material Design principles.
+MedVault Demo is a full-stack web application for managing medical documents with an AI-powered medical assistant. Patients can securely upload, organize, and view various types of medical files including lab reports, medical images, prescriptions, and doctor notes. The application features:
+- Automatic document type classification and OCR text extraction
+- AI medical assistant powered by Gemini AI for answering questions about medical history
+- Comprehensive PDF report generation with medical history summaries
+- Clean, healthcare-appropriate interface built with Material Design principles
 
 ## User Preferences
 
@@ -34,6 +38,8 @@ Preferred communication style: Simple, everyday language.
 **Key Pages**:
 - Dashboard: Main vault view with upload zone and document grid
 - Document Detail: Individual document view with metadata and actions
+- AI Chat: Medical assistant chat interface for querying medical history
+- Landing: Login page with feature highlights
 - Not Found: 404 error page
 
 **File Upload Support**:
@@ -50,11 +56,19 @@ Preferred communication style: Simple, everyday language.
 - Development mode with hot reloading via Vite
 
 **API Design**: RESTful endpoints
+
+*Document Management*:
 - `GET /api/documents` - List documents with optional type filtering
 - `GET /api/documents/:id` - Get single document details
 - `POST /api/documents` - Upload new document (multipart/form-data)
 - `GET /api/documents/:id/download` - Download original file
 - `DELETE /api/documents/:id` - Remove document
+
+*AI Chat Assistant*:
+- `POST /api/chat/message` - Send message to AI assistant (creates/updates conversation)
+- `GET /api/chat/conversations` - List user's chat conversations
+- `GET /api/chat/conversations/:id/messages` - Get messages for a specific conversation
+- `POST /api/chat/report` - Generate and download comprehensive PDF medical report
 
 **File Processing**:
 - Rule-based document classification using filename and MIME type patterns
@@ -91,6 +105,18 @@ Preferred communication style: Simple, everyday language.
 - Classification: documentType (enum), clinicalType, title, source, dateOfService
 - Content: shortSummary, extractedText (OCR)
 - Timestamps: createdAt, updatedAt
+
+*Chat Conversations Table*:
+- Primary key: Auto-incrementing integer ID
+- Foreign key: userId references users (varchar)
+- Fields: title (auto-generated from first message)
+- Timestamps: createdAt, updatedAt
+
+*Chat Messages Table*:
+- Primary key: Auto-incrementing integer ID
+- Foreign key: conversationId references chat_conversations
+- Fields: role (user/assistant), content, documentsReferenced (array of document IDs)
+- Timestamp: createdAt
 
 **Document Types Enum**:
 - lab_report
@@ -140,9 +166,16 @@ Preferred communication style: Simple, everyday language.
   - drizzle-zod: Generate Zod schemas from database schema
 
 ### AI/ML Services
-- **Gemini AI**: OCR text extraction and document analysis
+- **Gemini AI**: OCR text extraction, document analysis, and medical chat assistant
   - @google/genai: Gemini SDK for TypeScript
   - Replit AI Integrations: Built-in Gemini access without API key
+  - Capabilities: Text extraction from images/PDFs, medical history analysis, date-based queries, comprehensive report generation
+
+### PDF Generation
+- **PDFKit**: Server-side PDF generation for medical reports
+  - Branded reports with MedVault header
+  - Formatted medical history summaries
+  - Professional typography and layout
 
 ### File Handling
 - **Multer**: Multipart form data parsing for file uploads
@@ -158,3 +191,47 @@ Preferred communication style: Simple, everyday language.
 - @replit/vite-plugin-runtime-error-modal: Error overlay
 - @replit/vite-plugin-cartographer: Code navigation
 - @replit/vite-plugin-dev-banner: Development indicators
+
+## AI Medical Assistant Features
+
+### Chat Interface
+The AI Medical Assistant provides natural language access to medical document information:
+
+**Capabilities**:
+- Answer questions about medical history ("Did I ever have any surgeries?")
+- Search documents by date ("What tests did I do in 2024?")
+- List medications and prescriptions
+- Explain medical terms and findings
+- Generate comprehensive medical history reports
+
+**Technical Implementation**:
+- Powered by Gemini AI (gemini-1.5-flash model)
+- Analyzes extracted text from all user documents
+- Maintains conversation history with contextual awareness
+- Auto-generates conversation titles from first message
+- References specific documents in responses
+
+### PDF Report Generation
+Users can generate comprehensive medical history reports:
+- **Format**: Professional PDF with MedVault branding
+- **Content**: Organized summary of all medical documents
+- **Sections**: Chronological history, key findings, document references
+- **Download**: Automatic browser download with dated filename
+
+### OCR Text Extraction
+All uploaded documents undergo automatic text extraction:
+- **Images**: Gemini Vision API extracts text from medical images
+- **PDFs**: Text extraction from scanned/digital PDFs
+- **Processing Time**: 5-10 seconds per document
+- **Indexing**: Extracted text stored in database for AI analysis
+
+## Recent Changes (November 2025)
+
+### AI Chat Assistant Implementation
+- Added AI-powered medical chat assistant using Gemini AI
+- Created database schema for conversations and messages
+- Built chat interface with conversation history sidebar
+- Implemented PDF report generation with PDFKit
+- Enhanced landing page to highlight AI capabilities
+- Fixed React hooks ordering bug for proper route handling
+- Integrated Replit OIDC authentication for secure access
