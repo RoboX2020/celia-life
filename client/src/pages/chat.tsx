@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bot, Send, FileText, Download, Loader2, ExternalLink } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
+import { Footer } from "@/components/footer";
 import type { ChatMessage, ChatConversation } from "@shared/schema";
 
 interface ChatResponse {
@@ -287,6 +288,7 @@ export default function Chat() {
             </Button>
           </div>
         </form>
+        <Footer />
       </main>
     </div>
   );

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import DocumentDetail from "@/pages/document-detail";
@@ -13,9 +14,7 @@ import Chat from "@/pages/chat";
 import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  const [location] = useLocation();
-  
+function Router({ location }: { location: string }) {
   if (location === "/chat") {
     return <Chat />;
   }
@@ -48,6 +47,7 @@ function AuthenticatedLayout({ children, showSidebar = true }: { children: React
           <main className="flex-1 overflow-auto p-6">
             {children}
           </main>
+          <Footer />
         </div>
       </div>
     </SidebarProvider>
@@ -88,7 +88,7 @@ function AppContent() {
   
   return (
     <AuthenticatedLayout showSidebar={!isChatPage}>
-      <Router />
+      <Router location={location} />
     </AuthenticatedLayout>
   );
 }
