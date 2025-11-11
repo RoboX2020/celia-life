@@ -164,7 +164,7 @@ export default function Landing() {
 
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground space-y-2">
-          <p className="font-semibold">MedVault - Your AI-Powered Medical Document Manager</p>
+          <p className="font-semibold">Celia - Your AI-Powered Medical Document Manager</p>
           <p>Secure, Private, and Intelligent Healthcare Record Management</p>
         </div>
       </footer>

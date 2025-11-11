@@ -1,8 +1,8 @@
-# MedVault Demo - Medical Document Management System
+# Celia - Medical Document Management System
 
 ## Overview
 
-MedVault Demo is a full-stack web application for managing medical documents with an AI-powered medical assistant. Patients can securely upload, organize, and view various types of medical files including lab reports, medical images, prescriptions, and doctor notes. The application features:
+Celia is a full-stack web application for managing medical documents with an AI-powered medical assistant. Patients can securely upload, organize, and view various types of medical files including lab reports, medical images, prescriptions, and doctor notes. The application features:
 - Automatic document type classification and OCR text extraction
 - AI medical assistant powered by Gemini AI for answering questions about medical history
 - Comprehensive PDF report generation with medical history summaries
@@ -244,8 +244,15 @@ All uploaded documents undergo automatic text extraction:
 - Citations validate document IDs from AI responses to prevent hallucinations
 
 ### UI/UX Enhancements (November 10, 2025)
-- Created professional Footer component with MedVault branding
+- Created professional Footer component with Celia branding
 - Added footer to all pages: landing, dashboard, document detail, and chat
 - Footer includes features list, security information, and medical disclaimer
 - Removed all "Replit" branding from user-facing elements
 - Updated login button from "Log In with Replit" to "Sign In"
+
+### Branding and Layout Updates (November 11, 2025)
+- Rebranded entire application from "MedVault" to "Celia" across all UI and server files
+- Fixed footer layout to stay at bottom of page using min-h-screen and flex-col
+- Added Home button to AI Assistant chat screen for easy navigation back to dashboard
+- View mode switcher (By Date, By Category, By Clinical Type) uses shadcn Tabs with proper active states
+- Updated all titles, headers, footers, and PDF report generation with Celia branding
