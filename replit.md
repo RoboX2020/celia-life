@@ -257,15 +257,15 @@ All uploaded documents undergo automatic text extraction:
 - View mode switcher (By Date, By Category, By Clinical Type) uses shadcn Tabs with proper active states
 - Updated all titles, headers, footers, and PDF report generation with Celia branding
 
-### AI-Powered Document Classification (November 11, 2025)
-- Implemented intelligent document classification using Gemini AI
-- AI automatically extracts from uploaded documents:
-  - Meaningful document titles (e.g., "Complete Blood Count - January 2024")
-  - Document type classification (lab report, medical image, prescription, doctor note, other)
-  - Multiple clinical specialties if document covers multiple medical areas
-  - Date of service from document content
-  - Brief summary of key findings
-- Multi-category support: Documents can appear in multiple clinical type views
-- Added `clinicalTypes` array field to documents table for multi-category placement
-- Enhanced storage queries to filter by both primary and secondary clinical categories
-- Fallback to rule-based classification if AI is unavailable
+### Manual Document Classification System (November 11, 2025)
+- Redesigned upload flow with manual user input controls
+- Upload dialog prompts users to enter:
+  - Document name (e.g., "Blood Test Results - January 2024")
+  - Document category (lab report, medical image, prescription, doctor note, other)
+  - Clinical specialty (cardiology, neurology, dentistry, etc.)
+  - Date of service (optional)
+- Single-category system: Documents appear ONLY in the selected category
+- Removed AI document classification (kept OCR for chat assistant)
+- Removed multi-category support (dropped `clinicalTypes` array field)
+- View mode tab highlighting fixed with local state for immediate visual feedback
+- Filtration system works correctly with single-category filtering

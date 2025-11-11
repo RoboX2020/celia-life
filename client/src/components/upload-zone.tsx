@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { UploadDialog } from "@/components/upload-dialog";
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -27,32 +28,49 @@ interface UploadFile {
 
 export function UploadZone() {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({
+      file,
+      metadata,
+    }: {
+      file: File;
+      metadata: {
+        title: string;
+        documentType: string;
+        clinicalType: string;
+        dateOfService: Date | null;
+      };
+    }) => {
       const formData = new FormData();
       formData.append("file", file);
-      
+      formData.append("title", metadata.title);
+      formData.append("documentType", metadata.documentType);
+      formData.append("clinicalType", metadata.clinicalType);
+      if (metadata.dateOfService) {
+        formData.append("dateOfService", metadata.dateOfService.toISOString());
+      }
+
       const response = await fetch("/api/documents", {
         method: "POST",
         body: formData,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Upload failed");
       }
-      
+
       return response.json();
     },
-    onSuccess: (data, file) => {
-      setUploadFiles(prev => 
-        prev.map(uf => 
-          uf.file === file 
-            ? { ...uf, status: "ready" as const }
-            : uf
+    onSuccess: (data, { file }) => {
+      setUploadFiles((prev) =>
+        prev.map((uf) =>
+          uf.file === file ? { ...uf, status: "ready" as const } : uf
         )
       );
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
@@ -60,15 +78,15 @@ export function UploadZone() {
         title: "File uploaded successfully",
         description: `${file.name} has been added to your vault.`,
       });
-      
+
       setTimeout(() => {
-        setUploadFiles(prev => prev.filter(uf => uf.file !== file));
+        setUploadFiles((prev) => prev.filter((uf) => uf.file !== file));
       }, 2000);
     },
-    onError: (error: Error, file) => {
-      setUploadFiles(prev => 
-        prev.map(uf => 
-          uf.file === file 
+    onError: (error: Error, { file }) => {
+      setUploadFiles((prev) =>
+        prev.map((uf) =>
+          uf.file === file
             ? { ...uf, status: "error" as const, error: error.message }
             : uf
         )
@@ -81,23 +99,40 @@ export function UploadZone() {
     },
   });
 
-  const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
-    if (rejectedFiles.length > 0) {
-      rejectedFiles.forEach(({ file, errors }) => {
-        const error = errors[0];
-        toast({
-          title: "File rejected",
-          description: `${file.name}: ${error.message}`,
-          variant: "destructive",
-        });
-      });
-    }
+  const handleMetadataSubmit = (metadata: {
+    title: string;
+    documentType: string;
+    clinicalType: string;
+    dateOfService: Date | null;
+  }) => {
+    if (!pendingFile) return;
 
-    acceptedFiles.forEach(file => {
-      setUploadFiles(prev => [...prev, { file, status: "uploading" }]);
-      uploadMutation.mutate(file);
-    });
-  }, [uploadMutation, toast]);
+    setUploadFiles(prev => [...prev, { file: pendingFile, status: "uploading" }]);
+    uploadMutation.mutate({ file: pendingFile, metadata });
+    setDialogOpen(false);
+    setPendingFile(null);
+  };
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[], rejectedFiles: any[]) => {
+      if (rejectedFiles.length > 0) {
+        rejectedFiles.forEach(({ file, errors }) => {
+          const error = errors[0];
+          toast({
+            title: "File rejected",
+            description: `${file.name}: ${error.message}`,
+            variant: "destructive",
+          });
+        });
+      }
+
+      if (acceptedFiles.length > 0) {
+        setPendingFile(acceptedFiles[0]);
+        setDialogOpen(true);
+      }
+    },
+    [toast]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -114,8 +149,15 @@ export function UploadZone() {
   });
 
   return (
-    <div className="space-y-4">
-      <Card
+    <>
+      <UploadDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        file={pendingFile}
+        onSubmit={handleMetadataSubmit}
+      />
+      <div className="space-y-4">
+        <Card
         {...getRootProps()}
         className={`border-2 border-dashed transition-colors cursor-pointer hover-elevate ${
           isDragActive 
@@ -178,6 +220,7 @@ export function UploadZone() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

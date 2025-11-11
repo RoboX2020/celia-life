@@ -6,10 +6,9 @@ import multer from "multer";
 import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs/promises";
-import { processUploadedFile } from "./documentProcessor";
+import { format } from "date-fns";
 import { extractTextFromDocument } from "./ocrService";
 import { generateChatResponse, generateMedicalReport } from "./aiChatService";
-import { classifyDocumentWithAI } from "./aiDocumentClassifier";
 
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
@@ -80,18 +79,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file provided" });
       }
 
+      // Validate required manual metadata
+      const { title, documentType, clinicalType, dateOfService } = req.body;
+      if (!title || !documentType || !clinicalType) {
+        return res.status(400).json({
+          message: "Missing required fields: title, documentType, and clinicalType are required",
+        });
+      }
+
       const userId = req.user.claims.sub;
       const { originalname, mimetype, size, filename } = req.file;
       const storedFilePath = path.join(UPLOADS_DIR, filename);
 
-      // Process the file to determine type, title, etc.
-      const processedInfo = processUploadedFile({
-        originalFileName: originalname,
-        mimeType: mimetype,
-        sizeBytes: size,
-      });
-
-      // Extract text from document using OCR
+      // Extract text from document using OCR (for AI chat functionality)
       let extractedText: string | null = null;
       try {
         extractedText = await extractTextFromDocument(storedFilePath, mimetype);
@@ -99,42 +99,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("OCR extraction failed, continuing without extracted text:", error);
       }
 
-      // Use AI to classify document with extracted text
-      let classificationResult;
-      try {
-        classificationResult = await classifyDocumentWithAI(extractedText, originalname, mimetype);
-        console.log("AI classification result:", classificationResult);
-      } catch (error) {
-        console.error("AI classification failed, using fallback:", error);
-        const processedInfo = processUploadedFile({
-          originalFileName: originalname,
-          mimeType: mimetype,
-          sizeBytes: size,
-        });
-        classificationResult = {
-          documentType: processedInfo.documentType,
-          clinicalType: processedInfo.clinicalType,
-          clinicalTypes: [processedInfo.clinicalType],
-          title: processedInfo.title,
-          dateOfService: processedInfo.dateOfService,
-          shortSummary: processedInfo.shortSummary || "Document uploaded successfully.",
-        };
-      }
+      // Parse date if provided
+      const parsedDate = dateOfService ? new Date(dateOfService) : null;
 
-      // Create document record
+      // Create document record with user-provided metadata
       const document = await storage.createDocument({
         userId,
         originalFileName: originalname,
         storedFilePath,
         mimeType: mimetype,
         sizeBytes: size,
-        documentType: classificationResult.documentType,
-        clinicalType: classificationResult.clinicalType,
-        clinicalTypes: classificationResult.clinicalTypes,
-        title: classificationResult.title,
-        source: req.body.source || "Unknown",
-        dateOfService: classificationResult.dateOfService,
-        shortSummary: classificationResult.shortSummary,
+        documentType,
+        clinicalType,
+        title,
+        source: req.body.source || null,
+        dateOfService: parsedDate,
+        shortSummary: `Uploaded by user on ${format(new Date(), "MMMM d, yyyy")}`,
         extractedText: extractedText,
       });
 

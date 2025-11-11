@@ -73,12 +73,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (clinicalType) {
-      conditions.push(
-        or(
-          eq(documents.clinicalType, clinicalType),
-          sql`${documents.clinicalTypes} && ARRAY[${clinicalType}]::text[]`
-        )!
-      );
+      conditions.push(eq(documents.clinicalType, clinicalType));
     }
 
     const docs = await db

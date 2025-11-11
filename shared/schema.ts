@@ -61,7 +61,6 @@ export const documents = pgTable("documents", {
   sizeBytes: integer("size_bytes").notNull(),
   documentType: text("document_type").notNull(),
   clinicalType: text("clinical_type").notNull().default("other_unclassified"),
-  clinicalTypes: text("clinical_types").array().default(sql`ARRAY[]::text[]`),
   title: text("title").notNull(),
   source: text("source"),
   dateOfService: timestamp("date_of_service"),

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, FolderOpen, Stethoscope } from "lucide-react";
 import { VIEW_MODES, type ViewMode } from "@/lib/constants";
@@ -8,10 +9,21 @@ interface ViewModeSwitcherProps {
 }
 
 export function ViewModeSwitcher({ value, onValueChange }: ViewModeSwitcherProps) {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue as ViewMode);
+    onValueChange(newValue as ViewMode);
+  };
+
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm font-medium text-muted-foreground">View as:</span>
-      <Tabs value={value} onValueChange={(v) => onValueChange(v as ViewMode)}>
+      <Tabs value={localValue} onValueChange={handleChange}>
         <TabsList>
           <TabsTrigger 
             value={VIEW_MODES.BY_DATE} 
