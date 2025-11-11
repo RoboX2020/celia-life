@@ -269,3 +269,22 @@ All uploaded documents undergo automatic text extraction:
 - Removed multi-category support (dropped `clinicalTypes` array field)
 - View mode tab highlighting fixed with local state for immediate visual feedback
 - Filtration system works correctly with single-category filtering
+
+### URL Parameter Tracking Optimization (November 11, 2025)
+**Problem**: Dashboard URL parameters weren't updating when filters changed, breaking the filtration system
+**Root Cause**: useLocation() from Wouter doesn't re-render on query string changes
+**Solution**: Created custom `useSearchParams` hook using React's `useSyncExternalStore`
+
+**Implementation**:
+- Event-driven URL tracking (no polling intervals)
+- Global history wrapping (initialized only once per app lifecycle)
+- Shared listener Set for all hook consumers
+- Returns stable string from getSnapshot() to prevent infinite re-renders
+- useMemo creates new URLSearchParams only when query string changes
+- Located at: `client/src/hooks/use-search-params.ts`
+
+**Benefits**:
+- Zero performance overhead (event-driven, no polling)
+- No infinite render loops (stable snapshot values)
+- Production-ready and efficient
+- Drop-in replacement for any URLSearchParams usage
