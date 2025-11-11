@@ -8,14 +8,15 @@ import { TimelineView } from "@/components/timeline-view";
 import { CategoryView } from "@/components/category-view";
 import { ClinicalTypeView } from "@/components/clinical-type-view";
 import { VIEW_MODES, type ViewMode } from "@/lib/constants";
+import { useSearchParams } from "@/hooks/use-search-params";
 
 export default function Dashboard() {
-  const [location, setLocation] = useLocation();
-  const params = new URLSearchParams(location.split('?')[1] || '');
+  const [, setLocation] = useLocation();
+  const searchParams = useSearchParams();
   
-  const viewMode = (params.get('mode') as ViewMode) || VIEW_MODES.BY_CATEGORY;
-  const typeFilter = params.get('type');
-  const clinicalFilter = params.get('clinical');
+  const viewMode = (searchParams.get('mode') as ViewMode) || VIEW_MODES.BY_CATEGORY;
+  const typeFilter = searchParams.get('type');
+  const clinicalFilter = searchParams.get('clinical');
 
   const buildQueryUrl = () => {
     const queryParams = new URLSearchParams();

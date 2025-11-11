@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { 
   FileText, FlaskConical, Image, Stethoscope, Pill, FolderOpen,
   Heart, Brain, Droplet, Activity, Smile, Users, Apple
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import { VIEW_MODES, type ViewMode } from "@/lib/constants";
+import { useSearchParams } from "@/hooks/use-search-params";
 
 const documentTypeFilters = [
   { title: "All Documents", type: null, icon: FolderOpen },
@@ -40,37 +40,11 @@ const clinicalTypeFilters = [
 
 export function AppSidebar() {
   const [, setLocation] = useLocation();
-  const [currentUrl, setCurrentUrl] = useState(typeof window !== 'undefined' ? window.location.href : '/');
+  const searchParams = useSearchParams();
   
-  useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentUrl(window.location.href);
-    };
-    
-    window.addEventListener('popstate', handleLocationChange);
-    
-    const observer = new MutationObserver(handleLocationChange);
-    observer.observe(document.body, { childList: true, subtree: true });
-    
-    const interval = setInterval(handleLocationChange, 100);
-    
-    return () => {
-      window.removeEventListener('popstate', handleLocationChange);
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, []);
-  
-  const getSearchParams = () => {
-    const params = new URLSearchParams(window.location.search);
-    return {
-      mode: (params.get('mode') as ViewMode) || VIEW_MODES.BY_CATEGORY,
-      type: params.get('type'),
-      clinical: params.get('clinical'),
-    };
-  };
-  
-  const { mode: viewMode, type: currentType, clinical: currentClinical} = getSearchParams();
+  const viewMode = (searchParams.get('mode') as ViewMode) || VIEW_MODES.BY_CATEGORY;
+  const currentType = searchParams.get('type');
+  const currentClinical = searchParams.get('clinical');
   
   const handleFilterClick = (filterType: string | null, paramName: 'type' | 'clinical') => {
     const params = new URLSearchParams(window.location.search);

@@ -138,7 +138,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const documentType = req.query.documentType as string | undefined;
       const clinicalType = req.query.clinicalType as string | undefined;
+      
+      console.log('[DEBUG] GET /api/documents - filters:', { documentType, clinicalType, userId });
+      
       const documents = await storage.getDocuments(userId, documentType, clinicalType);
+      
+      console.log('[DEBUG] GET /api/documents - found:', documents.length, 'documents');
+      if (documents.length > 0) {
+        console.log('[DEBUG] Sample document:', {
+          id: documents[0].id,
+          documentType: documents[0].documentType,
+          clinicalType: documents[0].clinicalType,
+          title: documents[0].title
+        });
+      }
       
       // Remove storedFilePath from all documents for security
       const safeDocuments = documents.map(({ storedFilePath, ...doc }) => doc);

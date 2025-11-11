@@ -1,0 +1,1 @@
+Patient: John Doe, Blood Type: O+, Hemoglobin: 14.5 g/dL, Date: January 15, 2024
