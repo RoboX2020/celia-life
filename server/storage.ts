@@ -13,7 +13,7 @@ import {
   type InsertChatMessage
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, arrayContains, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -66,51 +66,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDocuments(userId: string, documentType?: string, clinicalType?: string): Promise<Document[]> {
-    if (documentType && clinicalType) {
-      const docs = await db
-        .select()
-        .from(documents)
-        .where(
-          and(
-            eq(documents.userId, userId),
-            eq(documents.documentType, documentType),
-            eq(documents.clinicalType, clinicalType)
-          )
-        )
-        .orderBy(desc(documents.createdAt));
-      return docs;
-    } else if (documentType) {
-      const docs = await db
-        .select()
-        .from(documents)
-        .where(
-          and(
-            eq(documents.userId, userId),
-            eq(documents.documentType, documentType)
-          )
-        )
-        .orderBy(desc(documents.createdAt));
-      return docs;
-    } else if (clinicalType) {
-      const docs = await db
-        .select()
-        .from(documents)
-        .where(
-          and(
-            eq(documents.userId, userId),
-            eq(documents.clinicalType, clinicalType)
-          )
-        )
-        .orderBy(desc(documents.createdAt));
-      return docs;
-    } else {
-      const docs = await db
-        .select()
-        .from(documents)
-        .where(eq(documents.userId, userId))
-        .orderBy(desc(documents.createdAt));
-      return docs;
+    const conditions = [eq(documents.userId, userId)];
+
+    if (documentType) {
+      conditions.push(eq(documents.documentType, documentType));
     }
+
+    if (clinicalType) {
+      conditions.push(
+        or(
+          eq(documents.clinicalType, clinicalType),
+          sql`${documents.clinicalTypes} && ARRAY[${clinicalType}]::text[]`
+        )!
+      );
+    }
+
+    const docs = await db
+      .select()
+      .from(documents)
+      .where(and(...conditions))
+      .orderBy(desc(documents.createdAt));
+    
+    return docs;
   }
 
   async getDocumentById(id: number, userId: string): Promise<Document | undefined> {
@@ -165,6 +142,7 @@ export class DatabaseStorage implements IStorage {
         conversationId: chatMessages.conversationId,
         role: chatMessages.role,
         content: chatMessages.content,
+        documentsReferenced: chatMessages.documentsReferenced,
         createdAt: chatMessages.createdAt,
       })
       .from(chatMessages)

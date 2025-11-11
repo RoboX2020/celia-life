@@ -9,6 +9,7 @@ import fs from "fs/promises";
 import { processUploadedFile } from "./documentProcessor";
 import { extractTextFromDocument } from "./ocrService";
 import { generateChatResponse, generateMedicalReport } from "./aiChatService";
+import { classifyDocumentWithAI } from "./aiDocumentClassifier";
 
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
@@ -90,12 +91,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sizeBytes: size,
       });
 
-      // Extract text from document using OCR (async, don't block response)
+      // Extract text from document using OCR
       let extractedText: string | null = null;
       try {
         extractedText = await extractTextFromDocument(storedFilePath, mimetype);
       } catch (error) {
         console.error("OCR extraction failed, continuing without extracted text:", error);
+      }
+
+      // Use AI to classify document with extracted text
+      let classificationResult;
+      try {
+        classificationResult = await classifyDocumentWithAI(extractedText, originalname, mimetype);
+        console.log("AI classification result:", classificationResult);
+      } catch (error) {
+        console.error("AI classification failed, using fallback:", error);
+        const processedInfo = processUploadedFile({
+          originalFileName: originalname,
+          mimeType: mimetype,
+          sizeBytes: size,
+        });
+        classificationResult = {
+          documentType: processedInfo.documentType,
+          clinicalType: processedInfo.clinicalType,
+          clinicalTypes: [processedInfo.clinicalType],
+          title: processedInfo.title,
+          dateOfService: processedInfo.dateOfService,
+          shortSummary: processedInfo.shortSummary || "Document uploaded successfully.",
+        };
       }
 
       // Create document record
@@ -105,12 +128,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storedFilePath,
         mimeType: mimetype,
         sizeBytes: size,
-        documentType: processedInfo.documentType,
-        clinicalType: processedInfo.clinicalType,
-        title: processedInfo.title,
+        documentType: classificationResult.documentType,
+        clinicalType: classificationResult.clinicalType,
+        clinicalTypes: classificationResult.clinicalTypes,
+        title: classificationResult.title,
         source: req.body.source || "Unknown",
-        dateOfService: processedInfo.dateOfService,
-        shortSummary: processedInfo.shortSummary,
+        dateOfService: classificationResult.dateOfService,
+        shortSummary: classificationResult.shortSummary,
         extractedText: extractedText,
       });
 
