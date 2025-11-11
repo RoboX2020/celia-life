@@ -51,7 +51,7 @@ Extracted Text: ${doc.extractedText || "No text extracted"}
       })
       .join("\n\n");
 
-    const systemPrompt = `You are a helpful medical AI assistant for MedVault, a personal health record management system. 
+    const systemPrompt = `You are a helpful medical AI assistant for Celia, a personal health record management system. 
 
 Your role:
 - Analyze the user's medical documents and answer questions about their medical history

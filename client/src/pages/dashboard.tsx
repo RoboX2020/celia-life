@@ -67,7 +67,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold mb-2" data-testid="heading-dashboard">
-          Medical Vault
+          Your Medical Vault
         </h1>
         <p className="text-muted-foreground">
           Upload and manage your medical documents securely

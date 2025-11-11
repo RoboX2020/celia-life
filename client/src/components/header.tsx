@@ -40,7 +40,7 @@ export function Header() {
       <div className="flex items-center gap-3">
         {location !== "/chat" && <SidebarTrigger data-testid="button-sidebar-toggle" />}
         <h1 className="text-xl font-semibold" data-testid="heading-app-name">
-          MedVault Demo
+          Celia
         </h1>
       </div>
       

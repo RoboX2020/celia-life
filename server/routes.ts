@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       doc.pipe(res);
 
-      doc.fontSize(20).font('Helvetica-Bold').text('MedVault Medical History Report', { align: 'center' });
+      doc.fontSize(20).font('Helvetica-Bold').text('Celia Medical History Report', { align: 'center' });
       doc.moveDown();
       doc.fontSize(10).font('Helvetica').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
       doc.moveDown(2);

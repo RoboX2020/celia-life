@@ -8,7 +8,7 @@ export function Footer() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              <span className="font-semibold">MedVault</span>
+              <span className="font-semibold">Celia</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Your AI-powered personal health record manager. Securely store, organize, and understand your medical documents.
@@ -46,7 +46,7 @@ export function Footer() {
         </div>
 
         <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} MedVault. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Celia. All rights reserved.</p>
           <p className="mt-2">
             For demonstration purposes only. Always consult healthcare professionals for medical advice.
           </p>

@@ -93,12 +93,13 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div className="flex h-screen">
-      <aside className="w-64 border-r flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg">AI Medical Assistant</h2>
-          <p className="text-sm text-muted-foreground mt-1">Chat History</p>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      <div className="flex flex-1">
+        <aside className="w-64 border-r flex flex-col">
+          <div className="p-4 border-b">
+            <h2 className="font-semibold text-lg">AI Medical Assistant</h2>
+            <p className="text-sm text-muted-foreground mt-1">Chat History</p>
+          </div>
         <ScrollArea className="flex-1 p-2">
           <div className="space-y-2">
             <Button
@@ -123,7 +124,17 @@ export default function Chat() {
             ))}
           </div>
         </ScrollArea>
-        <div className="p-2 border-t">
+        <div className="p-2 border-t space-y-2">
+          <Link href="/">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              data-testid="button-home"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Home
+            </Button>
+          </Link>
           <Button
             variant="outline"
             className="w-full justify-start"
@@ -134,20 +145,20 @@ export default function Chat() {
             {isGeneratingReport ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
-              <FileText className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4 mr-2" />
             )}
             Generate Full Report
           </Button>
         </div>
-      </aside>
+        </aside>
 
-      <main className="flex-1 flex flex-col">
-        <div className="border-b p-4">
-          <h1 className="text-2xl font-semibold">Medical AI Assistant</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Ask questions about your medical history, request specific records, or generate comprehensive reports
-          </p>
-        </div>
+        <main className="flex-1 flex flex-col">
+          <div className="border-b p-4">
+            <h1 className="text-2xl font-semibold">Medical AI Assistant</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Ask questions about your medical history, request specific records, or generate comprehensive reports
+            </p>
+          </div>
 
         {!currentConversationId && messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-8">
@@ -288,8 +299,9 @@ export default function Chat() {
             </Button>
           </div>
         </form>
-        <Footer />
       </main>
     </div>
+    <Footer />
+  </div>
   );
 }
