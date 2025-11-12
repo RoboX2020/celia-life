@@ -3,7 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { FileText, Lock, Shield, Upload, Bot, FileSearch, Languages } from "lucide-react";
 
 export default function Landing() {
-  const handleLogin = () => {
+  const handleAuth = () => {
     window.location.href = "/api/login";
   };
 
@@ -15,9 +15,14 @@ export default function Landing() {
             <Shield className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-semibold">Celia</h1>
           </div>
-          <Button onClick={handleLogin} data-testid="button-login">
-            Sign In
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleAuth} data-testid="button-sign-in">
+              Sign In
+            </Button>
+            <Button onClick={handleAuth} data-testid="button-sign-up">
+              Sign Up
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -34,11 +39,11 @@ export default function Landing() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={handleLogin} data-testid="button-login-hero">
+              <Button size="lg" onClick={handleAuth} data-testid="button-get-started">
                 Get Started Free
               </Button>
-              <Button size="lg" variant="outline" onClick={handleLogin}>
-                See How It Works
+              <Button size="lg" variant="outline" onClick={handleAuth} data-testid="button-sign-in-hero">
+                Sign In
               </Button>
             </div>
 
