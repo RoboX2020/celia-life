@@ -5,7 +5,7 @@ A personal health record management system featuring medical document analysis a
 ## Features
 
 - **Document Management**: Upload and organize medical records (PDF, Images).
-- **AI Analysis**: Automatically extract text and summarize documents using Google Gemini.
+- **AI Analysis**: Automatically extract text and summarize documents using OpenAI (GPT-4o).
 - **Medical Chat**: Ask questions about your health history with AI-powered context from your documents.
 - **Secure Auth**: Google OAuth 2.0 / OpenID Connect.
 
@@ -14,7 +14,7 @@ A personal health record management system featuring medical document analysis a
 - **Frontend**: React, Vite, TailwindCSS, Shadcn UI.
 - **Backend**: Express.js, serverless-compatible (Vercel).
 - **Database**: PostgreSQL (Neon), Drizzle ORM.
-- **AI**: Google Gemini Pro (via `@google/genai`).
+- **AI**: OpenAI GPT-4o (via `openai` SDK).
 - **Auth**: `openid-client`, `passport` (Google OIDC).
 
 ## Getting Started (Local)
@@ -23,7 +23,8 @@ A personal health record management system featuring medical document analysis a
 
 - Node.js (v20+)
 - PostgreSQL Database (Neon recommended)
-- Google Cloud Project (for OAuth and Gemini API)
+- Google Cloud Project (for OAuth)
+- OpenAI API Key
 
 ### Installation
 
@@ -49,8 +50,8 @@ A personal health record management system featuring medical document analysis a
     GOOGLE_CLIENT_ID=your_google_client_id
     GOOGLE_CLIENT_SECRET=your_google_client_secret
     
-    # Google Gemini AI
-    AI_INTEGRATIONS_GEMINI_API_KEY=your_gemini_api_key
+    # OpenAI
+    OPENAI_API_KEY=sk-proj-your-openai-key
     ```
 
 4.  **Run Migrations**:
