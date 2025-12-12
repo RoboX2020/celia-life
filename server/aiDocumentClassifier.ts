@@ -1,12 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import { format } from "date-fns";
 
-const genAI = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
-  },
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export interface AIClassificationResult {
@@ -49,25 +45,26 @@ Respond ONLY with valid JSON in this exact format:
   "shortSummary": "summary here"
 }`;
 
-    const result = await genAI.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
         {
           role: "user",
-          parts: [{ text: prompt }],
+          content: prompt,
         },
       ],
+      response_format: { type: "json_object" },
     });
 
-    const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const responseText = completion.choices[0].message.content || "{}";
 
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    let parsed: any;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch (e) {
       console.error("AI response did not contain valid JSON:", responseText);
       return createFallbackClassification(originalFileName, mimeType);
     }
-
-    const parsed = JSON.parse(jsonMatch[0]);
 
     const validDocTypes = ["lab_report", "medical_image", "doctor_note", "prescription", "other"];
     const validClinicalTypes = [

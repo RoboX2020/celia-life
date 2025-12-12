@@ -1,12 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import type { Document } from "@shared/schema";
 
-const genAI = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
-  },
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export interface ChatContext {
@@ -38,7 +34,7 @@ export async function generateChatResponse(
         const dateStr = doc.dateOfService
           ? new Date(doc.dateOfService).toLocaleDateString()
           : new Date(doc.createdAt).toLocaleDateString();
-        
+
         return `[Document ${index + 1}]
 ID: ${doc.id}
 Type: ${doc.documentType}
@@ -88,27 +84,23 @@ CRITICAL:
 - If no documents were used, return an empty citations array
 - Keep relevance notes brief (one sentence)`;
 
-    const messages = [
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
       ...conversationHistory.map((msg) => ({
-        role: msg.role === "user" ? "user" : "assistant",
+        role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
         content: msg.content,
       })),
       { role: "user", content: userQuery },
     ];
 
-    const chatContent = messages.map((msg) => ({
-      role: msg.role === "system" ? "user" : msg.role,
-      parts: [{ text: msg.content }],
-    }));
-
-    const result = await genAI.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: chatContent,
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: messages,
+      response_format: { type: "json_object" },
     });
 
-    const responseText = result.text || "{}";
-    
+    const responseText = completion.choices[0].message.content || "{}";
+
     let parsedResponse: { answer: string; citations?: Citation[] };
     try {
       parsedResponse = JSON.parse(responseText);
@@ -123,7 +115,7 @@ CRITICAL:
 
     const validCitations: Citation[] = [];
     const referencedDocs: number[] = [];
-    
+
     if (parsedResponse.citations && Array.isArray(parsedResponse.citations)) {
       parsedResponse.citations.forEach((citation) => {
         const doc = documents.find(d => d.id === citation.documentId);
@@ -160,7 +152,7 @@ export async function generateMedicalReport(documents: Document[]): Promise<stri
         const dateStr = doc.dateOfService
           ? new Date(doc.dateOfService).toLocaleDateString()
           : new Date(doc.createdAt).toLocaleDateString();
-        
+
         return `Document: ${doc.title}
 Type: ${doc.documentType}
 Date: ${dateStr}
@@ -200,17 +192,17 @@ Please create a well-structured medical history report that includes:
 
 Format the report professionally with clear headings and bullet points. Be thorough but concise.`;
 
-    const result = await genAI.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
         {
           role: "user",
-          parts: [{ text: prompt }],
+          content: prompt,
         },
       ],
     });
 
-    return result.text || "Unable to generate report. Please try again.";
+    return completion.choices[0].message.content || "Unable to generate report. Please try again.";
   } catch (error) {
     console.error("Error generating medical report:", error);
     throw new Error("Failed to generate medical report. Please try again.");
