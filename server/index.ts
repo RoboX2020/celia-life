@@ -56,9 +56,10 @@ const setupPromise = (async () => {
     throw err;
   });
 
-  if (app.get("env") === "development") {
-    // Dynamic import to avoid loading vite in production
-    const { setupVite } = await import("./vite");
+  if (process.env.NODE_ENV === "development") {
+    // Dynamic import with computed path to prevent esbuild from bundling vite in production
+    const vitePath = "./vite" + ".js";
+    const { setupVite } = await import(/* @vite-ignore */ vitePath);
     await setupVite(app, server);
   } else {
     serveStatic(app);
