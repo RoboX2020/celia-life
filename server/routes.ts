@@ -10,7 +10,9 @@ import { format } from "date-fns";
 import { extractTextFromDocument } from "./ocrService";
 import { generateChatResponse, generateMedicalReport } from "./aiChatService";
 
-const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.join("/tmp", "uploads")
+  : path.join(process.cwd(), "uploads");
 
 // Ensure uploads directory exists
 async function ensureUploadsDir() {
