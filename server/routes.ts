@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import multer from "multer";
 import { randomUUID } from "crypto";
 import path from "path";
@@ -47,7 +47,7 @@ const upload = multer({
       "image/jpeg",
       "image/png",
     ];
-    
+
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -126,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.file) {
         try {
           await fs.unlink(path.join(UPLOADS_DIR, req.file.filename));
-        } catch {}
+        } catch { }
       }
       res.status(500).json({ message: error.message });
     }
@@ -138,11 +138,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const documentType = req.query.documentType as string | undefined;
       const clinicalType = req.query.clinicalType as string | undefined;
-      
+
       console.log('[DEBUG] GET /api/documents - filters:', { documentType, clinicalType, userId });
-      
+
       const documents = await storage.getDocuments(userId, documentType, clinicalType);
-      
+
       console.log('[DEBUG] GET /api/documents - found:', documents.length, 'documents');
       if (documents.length > 0) {
         console.log('[DEBUG] Sample document:', {
@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: documents[0].title
         });
       }
-      
+
       // Remove storedFilePath from all documents for security
       const safeDocuments = documents.map(({ storedFilePath, ...doc }) => doc);
       res.json(safeDocuments);
@@ -355,17 +355,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat/report", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      
+
       const documents = await storage.getDocuments(userId);
 
       if (documents.length === 0) {
-        return res.status(400).json({ 
-          message: "No documents found. Please upload medical documents first." 
+        return res.status(400).json({
+          message: "No documents found. Please upload medical documents first."
         });
       }
 
       const reportText = await generateMedicalReport(documents);
-      
+
       const PDFDocument = (await import('pdfkit')).default;
       const doc = new PDFDocument({
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const fileName = `medical-report-${new Date().toISOString().split('T')[0]}.pdf`;
-      
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 

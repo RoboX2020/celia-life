@@ -78,7 +78,6 @@ export const insertUserSchema = createInsertSchema(users).omit({
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -104,13 +103,11 @@ export const chatMessages = pgTable("chat_messages", {
 
 // Insert schemas for chat
 export const insertChatConversationSchema = createInsertSchema(chatConversations).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
-  id: true,
   createdAt: true,
 });
 

@@ -58,9 +58,9 @@ Respond ONLY with valid JSON in this exact format:
         },
       ],
     });
-    
-    const responseText = result.response.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    
+
+    const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.error("AI response did not contain valid JSON:", responseText);
@@ -68,7 +68,7 @@ Respond ONLY with valid JSON in this exact format:
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
-    
+
     const validDocTypes = ["lab_report", "medical_image", "doctor_note", "prescription", "other"];
     const validClinicalTypes = [
       "general_primary_care",
@@ -82,8 +82,8 @@ Respond ONLY with valid JSON in this exact format:
       "other_unclassified"
     ];
 
-    const documentType = validDocTypes.includes(parsed.documentType) 
-      ? parsed.documentType 
+    const documentType = validDocTypes.includes(parsed.documentType)
+      ? parsed.documentType
       : "other";
 
     let clinicalTypes = Array.isArray(parsed.clinicalTypes)
