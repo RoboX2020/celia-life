@@ -16,11 +16,17 @@ const getOidcConfig = memoize(
       if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
         throw new Error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET for authentication.");
       }
-      return await client.discovery(
-        new URL("https://accounts.google.com"),
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET
-      );
+      try {
+        // Use the correct Google issuer URL for OIDC discovery
+        return await client.discovery(
+          new URL("https://accounts.google.com"),
+          process.env.GOOGLE_CLIENT_ID,
+          process.env.GOOGLE_CLIENT_SECRET
+        );
+      } catch (discoveryError: any) {
+        console.error("Google OIDC discovery failed:", discoveryError.message);
+        throw new Error(`Google OIDC discovery failed: ${discoveryError.message}`);
+      }
     } else {
       // Replit Auth
       return await client.discovery(
