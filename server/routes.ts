@@ -68,6 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // GET /api/auth/user - Get current user (required for useAuth hook)
+  // Who am I? Returns the signed-in user's profile.
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -80,6 +81,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/documents - Upload a document (protected)
+  // Upload a document: multer saves the incoming file to disk, then its
+  // details are recorded in storage.
   app.post("/api/documents", isAuthenticated, upload.single("file"), async (req: any, res) => {
     try {
       if (!req.file) {
@@ -140,6 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/documents - List documents with optional type filter (protected)
+  // List the signed-in user's documents.
   app.get("/api/documents", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -169,6 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/documents/:id - Get document details (protected)
+  // One document's details.
   app.get("/api/documents/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -191,6 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/documents/:id/download - Download document file (protected)
+  // Download the original uploaded file.
   app.get("/api/documents/:id/download", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -226,6 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DELETE /api/documents/:id - Delete a document (protected)
+  // Delete a document and its file.
   app.delete("/api/documents/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -257,6 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/chat/conversations - Create a new conversation (protected)
+  // Start a new chat (optionally tied to a document).
   app.post("/api/chat/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -268,6 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/chat/conversations - Get all conversations for user (protected)
+  // List the user's chats.
   app.get("/api/chat/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -279,6 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/chat/conversations/:id/messages - Get messages for a conversation (protected)
+  // The message history of one chat.
   app.get("/api/chat/conversations/:id/messages", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -295,6 +305,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/chat/message - Send a message and get AI response (protected)
+  // Send a message: the server finds the relevant document text, asks the AI,
+  // and saves both sides of the exchange so the chat survives reloads.
   app.post("/api/chat/message", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -359,6 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/chat/report - Generate comprehensive medical report (protected)
+  // Generate a downloadable report from a chat or document.
   app.post("/api/chat/report", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
