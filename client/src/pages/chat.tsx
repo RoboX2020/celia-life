@@ -28,15 +28,19 @@ export default function Chat() {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Load the chat list from the server (kept fresh automatically by react-query).
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<ChatConversation[]>({
     queryKey: ["/api/chat/conversations"],
   });
 
+  // Load the messages of whichever chat is currently open.
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat/conversations", currentConversationId, "messages"],
     enabled: !!currentConversationId,
   });
 
+  // Send the typed message; on success, refresh the chat list and messages,
+  // and clear the input box.
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
       const response = await apiRequest("POST", "/api/chat/message", {
@@ -55,12 +59,15 @@ export default function Chat() {
     },
   });
 
+  // Ignore empty messages and double-submits while one is in flight.
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || sendMessageMutation.isPending) return;
     sendMessageMutation.mutate(input);
   };
 
+  // Ask the server to build a PDF report, then trigger a browser download of
+  // the file it returns.
   const handleGenerateReport = async () => {
     setIsGeneratingReport(true);
     try {
@@ -93,6 +100,7 @@ export default function Chat() {
   };
 
   useEffect(() => {
+    // Keep the chat scrolled to the newest message.
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
