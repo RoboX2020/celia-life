@@ -1,3 +1,7 @@
+// ====================================================================
+// document-detail.tsx - one document's page: its contents, AI summary,
+// and details.
+// ====================================================================
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { type Document } from "@shared/schema";

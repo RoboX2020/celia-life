@@ -1,3 +1,6 @@
+// ====================================================================
+// upload-dialog.tsx - the upload pop-up: pick files, watch them process.
+// ====================================================================
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

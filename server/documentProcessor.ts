@@ -1,3 +1,7 @@
+// ====================================================================
+// documentProcessor.ts - turns an uploaded file (PDF, doc, image...) into
+// plain text the AI can read, then files it away.
+// ====================================================================
 import { format } from "date-fns";
 
 interface ProcessFileMetadata {

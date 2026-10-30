@@ -1,3 +1,8 @@
+// ====================================================================
+// aiDocumentClassifier.ts - the AI auto-filer: reads each new document and
+// guesses what kind it is (invoice, letter, homework...) so it lands in
+// the right place without manual sorting.
+// ====================================================================
 import OpenAI from "openai";
 import { format } from "date-fns";
 

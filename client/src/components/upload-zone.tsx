@@ -1,3 +1,6 @@
+// ====================================================================
+// upload-zone.tsx - the drag-and-drop area for adding documents.
+// ====================================================================
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, FileCheck, AlertCircle, Loader2 } from "lucide-react";

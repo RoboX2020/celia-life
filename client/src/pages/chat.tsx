@@ -1,3 +1,7 @@
+// ====================================================================
+// chat.tsx - the chat page: ask questions about your documents and see
+// the AI's answers stream in, with sources from your files.
+// ====================================================================
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";

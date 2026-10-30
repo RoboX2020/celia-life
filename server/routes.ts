@@ -1,3 +1,8 @@
+// ====================================================================
+// routes.ts - the server's front door: every URL the browser can call
+// (sign in, upload a document, list/search documents, chat with them) is
+// wired up here to the code that handles it.
+// ====================================================================
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";

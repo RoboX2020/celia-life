@@ -1,3 +1,7 @@
+// ====================================================================
+// auth.ts - sign-in and sessions: who you are, keeping you logged in,
+// and the isAuthenticated guard that protects private documents.
+// ====================================================================
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";

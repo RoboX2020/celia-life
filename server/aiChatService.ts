@@ -1,3 +1,8 @@
+// ====================================================================
+// aiChatService.ts - the 'chat with your documents' brain: sends your
+// question plus the relevant document text to the AI and returns its
+// answer, so replies are grounded in YOUR files, not general knowledge.
+// ====================================================================
 import OpenAI from "openai";
 import type { Document } from "@shared/schema";
 
